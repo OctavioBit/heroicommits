@@ -1,0 +1,33 @@
+{
+    "name": "heroicommits",
+    "displayName": "Heroicommits",
+    "description": "Show your commitment with commits",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.85.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:gitHeroicommits.searchHeroicommits"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "gitHeroicommits.searchHeroicommits",
+                "title": "Search for Heroicommits"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.85.0",
+        "typescript": "^5.3.3"
+    }
+}
