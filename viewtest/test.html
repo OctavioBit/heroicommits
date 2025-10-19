@@ -69,67 +69,56 @@
     <div id="plot"></div>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
-        // Commits individuales (incluyendo uno a las 19:15)
         const commits = [
             { dia: 8, hora: 14 },
-            { dia: 8, hora: 14 },
-            { dia: 8, hora: 14 },
+            { dia: 8, hora: 14.5 },   // 14:30
             { dia: 8, hora: 15 },
             { dia: 21, hora: 0 },
             { dia: 21, hora: 19 },
-            { dia: 21, hora: 19.25 }, // 19:15
+            { dia: 21, hora: 19.25 }  // 19:15
         ];
 
-        // Franja horaria y fines de semana
-        const shapes = [
-            {
-                type: 'rect',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                yref: 'y',
-                y0: 9,
-                y1: 18,
-                fillcolor: 'rgba(255, 200, 0, 0.2)',
-                line: { width: 0 }
-            }
-        ];
-
-        // === TRAZA DE COMMITS ===
+        // Crear traza
         const trace = {
             x: commits.map(c => c.dia),
             y: commits.map(c => c.hora),
             mode: 'markers',
-            type: 'scatter',            
-            marker: {
-                size: 10,
-                color: '#1f77b4',
-                opacity: 0.8,
-                line: { color: '#000', width: 1 }
-            },
+            type: 'scatter',
+            marker: { size: 10, color: '#1f77b4', opacity: 0.9, line: { color: '#000', width: 1 } },
             text: commits.map(c => {
-                const horas = Math.floor(c.hora);
-                const minutos = Math.round((c.hora % 1) * 60);
-                const hh = horas.toString().padStart(2, '0');
-                const mm = minutos.toString().padStart(2, '0');
-                return `Día ${c.dia}, ${hh}:${mm}`;
+                const hh = Math.floor(c.hora).toString().padStart(2, '0');
+                const mm = Math.round((c.hora % 1) * 60).toString().padStart(2, '0');
+                return `${hh}:${mm}`;
             }),
-            hovertemplate: '%{text}<extra></extra>'            
+            hovertemplate: 'Día %{x}, Hora %{text}<extra></extra>'
         };
 
-        // === LAYOUT ===
+        // Definir ticks del eje Y en formato HH:MM
+        const tickVals = [];
+        const tickText = [];
+        for (let h = 0; h <= 23; h++) {
+            tickVals.push(h);
+            tickText.push(h.toString().padStart(2, '0') + ':00');
+        }
+
+        // Layout con eje Y formateado
         const layout = {
-            title: 'Commits por día y hora (soporta minutos)',
+            title: 'Commits por día y hora',
             xaxis: { title: 'Día del mes', range: [1, 31], dtick: 1 },
-            yaxis: { title: 'Hora del día', range: [0, 23], dtick: 1 },
-            shapes: shapes,
-            hovermode:'y',
+            yaxis: {
+                title: 'Hora del día',
+                range: [0, 23],
+                tickvals: tickVals,
+                ticktext: tickText
+            },
+            hovermode: 'y',
             margin: { t: 50, r: 20, b: 50, l: 60 },
             height: 600
         };
 
         Plotly.newPlot('plot', [trace], layout);
     </script>
+
 
     
 </body>
