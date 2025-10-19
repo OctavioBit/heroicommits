@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroicommits</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            color: #ddd;
+            background-color: #1e1e1e;
+        }
+
+        h2 {
+            color: #61dafb;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input {
+            background: #252526;
+            color: #ddd;
+            border: 1px solid #333;
+            padding: 5px;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: #007acc;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #005fa3;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        canvas {
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Heroicommits</h2>
+    <label>From: <input type="date" id="desde"></label>
+    <label>to: <input type="date" id="hasta"></label>
+    <button id="btnCount">Search for Heroicommits</button>
+    <div id="result"></div>    
+
+   
+    <div id="plot"></div>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        // Commits individuales (incluyendo uno a las 19:15)
+        const commits = [
+            { dia: 8, hora: 14 },
+            { dia: 8, hora: 14 },
+            { dia: 8, hora: 14 },
+            { dia: 8, hora: 15 },
+            { dia: 21, hora: 0 },
+            { dia: 21, hora: 19 },
+            { dia: 21, hora: 19.25 }, // 19:15
+        ];
+
+        // Franja horaria y fines de semana
+        const shapes = [
+            {
+                type: 'rect',
+                xref: 'paper',
+                x0: 0,
+                x1: 1,
+                yref: 'y',
+                y0: 9,
+                y1: 18,
+                fillcolor: 'rgba(255, 200, 0, 0.2)',
+                line: { width: 0 }
+            }
+        ];
+
+        // === TRAZA DE COMMITS ===
+        const trace = {
+            x: commits.map(c => c.dia),
+            y: commits.map(c => c.hora),
+            mode: 'markers',
+            type: 'scatter',            
+            marker: {
+                size: 10,
+                color: '#1f77b4',
+                opacity: 0.8,
+                line: { color: '#000', width: 1 }
+            },
+            text: commits.map(c => {
+                const horas = Math.floor(c.hora);
+                const minutos = Math.round((c.hora % 1) * 60);
+                const hh = horas.toString().padStart(2, '0');
+                const mm = minutos.toString().padStart(2, '0');
+                return `Día ${c.dia}, ${hh}:${mm}`;
+            }),
+            hovertemplate: '%{text}<extra></extra>'            
+        };
+
+        // === LAYOUT ===
+        const layout = {
+            title: 'Commits por día y hora (soporta minutos)',
+            xaxis: { title: 'Día del mes', range: [1, 31], dtick: 1 },
+            yaxis: { title: 'Hora del día', range: [0, 23], dtick: 1 },
+            shapes: shapes,
+            hovermode:'y',
+            margin: { t: 50, r: 20, b: 50, l: 60 },
+            height: 600
+        };
+
+        Plotly.newPlot('plot', [trace], layout);
+    </script>
+
+    
+</body>
+</html>

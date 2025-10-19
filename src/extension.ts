@@ -124,6 +124,7 @@ function getWebviewContent(scriptUri: vscode.Uri, chartUri: vscode.Uri): string 
       <div id="result"></div>
       <canvas id="chart" width="800" height="400"></canvas>
 
+      
       <script src="${chartUri}"></script>
       <script src="${scriptUri}"></script>
     </body>
