@@ -17,14 +17,14 @@ export function activate(context: vscode.ExtensionContext) {
             );
 
             const scriptUri = panel.webview.asWebviewUri(
-                vscode.Uri.joinPath(context.extensionUri, 'media', 'webview.js')
+                vscode.Uri.joinPath(context.extensionUri, 'media', 'script.js')
             );
 
-            const chartUri = vscode.Uri.parse(
-                'https://cdn.jsdelivr.net/npm/chart.js'
+            const plottyCDNUri = vscode.Uri.parse(
+                'https://cdn.plot.ly/plotly-latest.min.js'
             );
 
-            panel.webview.html = getWebviewContent(scriptUri, chartUri);
+            panel.webview.html = getWebviewContent(scriptUri, plottyCDNUri);
 
             panel.webview.onDidReceiveMessage(async (msg) => {
 
@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
                             if (!data[date]) data[date] = {};
                             data[date][author] = (data[date][author] || 0) + 1;
                         }
-
+                        
                         panel.webview.postMessage({
                             type: 'chartData',
                             data
@@ -77,55 +77,76 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() { }
 
-function getWebviewContent(scriptUri: vscode.Uri, chartUri: vscode.Uri): string {
+function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): string {
     return /*html*/ `
-    <!DOCTYPE html>
-    <html lang="es">
+
     <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Gráfico de commits</title>
-      <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heroicommits</title>
+    <style>
         body {
-          font-family: sans-serif;
-          padding: 20px;
-          color: #ddd;
-          background-color: #1e1e1e;
+            font-family: sans-serif;
+            padding: 20px;
+            color: #ddd;
+            background-color: #1e1e1e;
         }
-        h2 { color: #61dafb; }
-        label { display: block; margin-top: 10px; }
+
+        h2 {
+            color: #61dafb;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
         input {
-          background: #252526;
-          color: #ddd;
-          border: 1px solid #333;
-          padding: 5px;
-          border-radius: 4px;
-          width: 200px;
+            background: #252526;
+            color: #ddd;
+            border: 1px solid #333;
+            padding: 5px;
+            border-radius: 4px;
+            width: 200px;
         }
+
         button {
-          margin-top: 15px;
-          padding: 8px 16px;
-          background: #007acc;
-          border: none;
-          color: white;
-          border-radius: 4px;
-          cursor: pointer;
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: #007acc;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
         }
-        button:hover { background: #005fa3; }
-        #result { margin-top: 20px; font-weight: bold; }
-        canvas { margin-top: 20px; background: #fff; border-radius: 8px; }
-      </style>
-    </head>
-    <body>
-      <h2>Commits por día y autor</h2>
-      <label>Desde: <input type="date" id="desde"></label>
-      <label>Hasta: <input type="date" id="hasta"></label>
-      <button id="btnCount">Generar gráfico</button>
-      <div id="result"></div>
-      <canvas id="chart" width="800" height="400"></canvas>
+
+        button:hover {
+            background: #005fa3;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        canvas {
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+     <h2>Heroicommits</h2>
+    <label>From: <input type="date" id="desde"></label>
+    <label>to: <input type="date" id="hasta"></label>
+    <button onclick="searchHeroiCommits()">Search for Heroicommits</button>
+    <div id="result"></div>
+    <div id="selectAuthor"></div>
+    <div id="plot"></div>
 
       
-      <script src="${chartUri}"></script>
+      <script src="${plottyCDNUri}"></script>
       <script src="${scriptUri}"></script>
     </body>
     </html>
