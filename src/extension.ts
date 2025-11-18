@@ -30,6 +30,13 @@ export function activate(context: vscode.ExtensionContext) {
 
                 if (msg.command === 'count') {
 
+                    vscode.window.showInformationMessage("Hola desde VS Code!" + msg.text);
+
+                    panel.webview.postMessage({
+                        command: "processedText",
+                        text: "Hola desde VS Code!" + msg.text
+                    });
+                    
                     const { desde, hasta } = msg;
                     try {
                         const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -39,16 +46,21 @@ export function activate(context: vscode.ExtensionContext) {
                                 text: 'You must open a folder in VS Code'
                             });
                             return;
+
+
                         }
-
+                                                
                         const repoPath = workspaceFolders[0].uri.fsPath;
-                        const { stdout } = await execPromise(
-                            `git log --since="${desde}" --until="${hasta}" --pretty=format:"%ad|%an" --date=short`,
-                            { cwd: repoPath }
-                        );
 
+                        //2025-07-18 00:18:35 -0300|OctavioBit FORMATO ISO
+                        const gitCommand = `git log --since="${desde}" --until="${hasta}" --pretty=format:"%ad|%an" --date=iso`;
+                        
+                        const { stdout } = await execPromise(gitCommand, { cwd: repoPath });
+                        
                         const lines = stdout.trim().split('\n').filter(Boolean);
                         const data: Record<string, Record<string, number>> = {};
+
+                        vscode.window.showInformationMessage(gitCommand);
 
                         for (const line of lines) {
                             const [date, author] = line.split('|');
@@ -58,7 +70,7 @@ export function activate(context: vscode.ExtensionContext) {
                         }
                         
                         panel.webview.postMessage({
-                            type: 'chartData',
+                            type: 'commitsData',
                             data
                         });
                     } catch (err: any) {
@@ -144,6 +156,40 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
     <div id="result"></div>
     <div id="selectAuthor"></div>
     <div id="plot"></div>
+    <div id="output"></div>
+
+    <button id="btn">Mostrar Hola</button>
+
+      <script>
+        // Definir API VS Code
+        const vscode = acquireVsCodeApi();
+
+        // Enviar mensaje a la extensión
+        document.getElementById("btn").addEventListener("click", () => {
+          vscode.postMessage({
+            command: "count",
+            text: "el dato",
+            desde: document.getElementById("desde").value,
+            hasta: document.getElementById("hasta").value
+          });
+        });
+
+        //Recibir mensaje desde la extension
+        window.addEventListener("message", event => {
+            const message = event.data;
+
+            if (message.command === "processedText") {
+                document.getElementById("output").innerText =
+                    "Resultado desde la extensión: " + message.text;
+            }
+
+            if (message.command === "commitsData") {
+                document.getElementById("output").innerText =
+                    message.data
+            }
+        });
+
+      </script>
 
       
       <script src="${plottyCDNUri}"></script>
