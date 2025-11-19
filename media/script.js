@@ -7,6 +7,10 @@ function searchHeroiCommits() {
     showHeroiCommits(commits);
 }
 
+function alerto(){
+    document.getElementById("output").innerText = "pepe2";
+}
+
 function showHeroiCommits(allcommits) {
     // === TRAZA DE COMMITS ===
     const trace = {
