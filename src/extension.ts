@@ -28,15 +28,9 @@ export function activate(context: vscode.ExtensionContext) {
 
             panel.webview.onDidReceiveMessage(async (msg) => {
 
-                if (msg.command === 'count') {
-
-                    vscode.window.showInformationMessage("Hola desde VS Code!" + msg.text);
-
-                    panel.webview.postMessage({
-                        command: "processedText",
-                        text: "Hola desde VS Code!" + msg.text
-                    });
-                    
+                if (msg.command != 'searchHeroiCommits') 
+                    return;
+                                                            
                     const { desde, hasta } = msg;
                     try {
                         const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -57,9 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
                         const { stdout } = await execPromise(gitCommand, { cwd: repoPath });                        
                         const lines = stdout.trim().split('\n').filter(Boolean);
                         let commitList: { dia: string; hora: number; author: string }[] = [];
-                        
-                        vscode.window.showInformationMessage(gitCommand);
-
+                                                
                         for (const line of lines) {
                             const [fullDate, author] = line.split('|');
                             if (!fullDate || !author) continue;
@@ -79,8 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
                             type: 'error',
                             text: `Error on searching for heroicommits: ${err.message}`
                         });
-                    }
-                }
+                    }                
             });
         }
     );
@@ -156,17 +147,22 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
     </style>
 </head>
 <body>
-     <h2>Heroicommits</h2>
-    <label>From: <input type="date" id="desde"></label>
-    <label>to: <input type="date" id="hasta"></label>
-    <button onclick="searchHeroiCommits()">Search for Heroicommits</button>
-    <div id="result"></div>
-    <div id="selectAuthor"></div>
+    <h2>Heroicommits</h2>
+    <table>
+        <tr>
+            <td><label>From: <input type="date" id="desde"></label></td>
+            <td><label>to: <input type="date" id="hasta"></label></td>
+            <td><button id="btnSearchHeroiCommits">Search HeroiCommits</button></td>
+            <td><div id="selectAuthor"></div></td>
+        </tr>
+    </table>
     <div id="plot"></div>
-    <div id="output"></div>
-
-    <button id="btn">Mostrar Hola</button>
-
+    <style>
+        table {
+        border-collapse: separate;
+        border-spacing: 15px; /* espacio entre celdas */
+        }
+    </style>
       <script>
 
         var commits = [];
@@ -175,32 +171,27 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         const vscode = acquireVsCodeApi();
 
         // Enviar mensaje a la extensión
-        document.getElementById("btn").addEventListener("click", () => {
+        document.getElementById("btnSearchHeroiCommits").addEventListener("click", () => {
           vscode.postMessage({
-            command: "count",
-            text: "el dato",
+            command: "searchHeroiCommits",
             desde: document.getElementById("desde").value,
             hasta: document.getElementById("hasta").value
           });
         });
 
-        //Recibir mensaje desde la extension
         window.addEventListener("message", event => {
+
             const message = event.data;
 
-            if (message.command === "processedText") {
-                document.getElementById("output").innerText =
-                    "Resultado desde la extensión: " + message.text;
+            if (message.command != "commitsData") {
+                return;
             }
 
-            if (message.command === "commitsData") {
-                commits = message.commitList;
-                searchHeroiCommits();
-            }
+            commits = message.commitList;
+            searchHeroiCommits();
         });
 
         function searchHeroiCommits() {
-            //getCommitsData();
             createSelectAuthors();
             showHeroiCommits(commits);
         }
@@ -218,7 +209,15 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             document.getElementById("selectAuthor").innerHTML = htmlSelect;
         }
 
+        function isHeroicommit(commit){
+
+            return commit.hora < 9  || 
+                   commit.hora > 18 || 
+                   esFinDeSemana(commit);
+        }
+
         function showHeroiCommits(allcommits) {
+
         // === TRAZA DE COMMITS ===
         const trace = {
             x: allcommits.map(c => c.dia),
@@ -227,7 +226,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             type: 'scatter',
             marker: {
                 size: 10,
-                color: '#1f77b4',
+                color: allcommits.map(c => isHeroicommit(c) ? 'red': 'green'),
                 opacity: 0.9,
                 line: { color: '#000', width: 1 }
             },
@@ -241,7 +240,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
 
         // === FUNCIONES PARA SABADOS Y DOMINGOS ===
         const diasDelMes = Array.from({ length: 31 }, (_, i) => i + 1);
-        const primerDiaSemana = 3; // 0=domingo, 1=lunes ... (ej: día 1 = miércoles)
+        const primerDiaSemana = 6; // 0=domingo, 1=lunes ... (ej: día 1 = miércoles)
         function esFinDeSemana(dia) {
             const diaSemana = (primerDiaSemana + (dia - 1)) % 7;
             return diaSemana === 0 || diaSemana === 6;
@@ -320,7 +319,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         const layout = {
             title: 'Commits por día y hora (con franjas y fines de semana)',
             xaxis: xaxis,
-            yaxis: { title: 'Hours', range: [0, 23], tickvals: tickVals, ticktext: tickText },
+            yaxis: { title: 'Hours', range: [0,23], tickvals: tickVals, ticktext: tickText },
             shapes: shapes,
             height: 600,
             hovermode: 'closest'
@@ -329,33 +328,10 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         // === PLOTEAR ===
         Plotly.newPlot('plot', [trace], layout);
     }
+    
+    </script>
 
-    function getCommitsData() {
-
-    commits = [
-        { dia: 8, hora: 14, author: 'Anton' },
-        { dia: 8, hora: 14.25, author: 'Anton' }, // 14:15
-        { dia: 8, hora: 15, author: 'Anton' },
-        { dia: 8, hora: 14, author: 'Uxia' },
-        { dia: 9, hora: 14.25, author: 'Uxia' }, // 14:15
-        { dia: 9, hora: 15, author: 'Uxia' },
-        { dia: 10, hora: 14, author: 'PisPas' },
-        { dia: 11, hora: 14.25, author: 'PisPas' }, // 14:15
-        { dia: 5, hora: 15, author: 'Anton' },
-        { dia: 15, hora: 14, author: 'Anton' },
-        { dia: 20, hora: 14.25, author: 'Anton' }, // 14:15
-        { dia: 23, hora: 15, author: 'Anton' },
-        { dia: 21, hora: 0, author: 'Uxia' },
-        { dia: 21, hora: 19, author: 'Uxia' },
-        { dia: 22, hora: 21, author: 'Anton' },
-        { dia: 21, hora: 19.25, author: 'Anton' } // 19:15
-    ];
-}
-
-      </script>
-
-      
-      <script src="${plottyCDNUri}"></script>      
+    <script src="${plottyCDNUri}"></script>
     </body>
     </html>
   `;
