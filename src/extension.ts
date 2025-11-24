@@ -31,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
                 if (msg.command != 'searchHeroiCommits') 
                     return;
                                                             
-                    const { desde, hasta } = msg;
+                    const { month, year } = msg;
                     try {
                         const workspaceFolders = vscode.workspace.workspaceFolders;
                         if (!workspaceFolders) {
@@ -47,7 +47,11 @@ export function activate(context: vscode.ExtensionContext) {
                         const repoPath = workspaceFolders[0].uri.fsPath;
 
                         //2025-07-18 00:18:35 -0300|OctavioBit FORMATO ISO
-                        const gitCommand = `git log --since="${desde}" --until="${hasta}" --pretty=format:"%ad|%an" --date=iso`;                        
+                        const dateFrom = year + "-" + month + "-01";
+                        const dateTo = year + "-" + month + "-" + new Date(year, month, 0).getDate();
+
+                        const gitCommand = `git log --since="${dateFrom}" --until="${dateTo}" --pretty=format:"%ad|%an" --date=iso`;
+                        
                         const { stdout } = await execPromise(gitCommand, { cwd: repoPath });                        
                         const lines = stdout.trim().split('\n').filter(Boolean);
                         let commitList: { dia: string; hora: number; author: string }[] = [];
@@ -57,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
                             if (!fullDate || !author) continue;
 
                             const [date,time,zone] = fullDate.split(' ');
-                            const [year,month,day] = date.split('-');
+                            const [yy,mm,day] = date.split('-');
 
                             commitList.push({ dia: day, hora: horaAdecimal(time), author: author });
                         }
@@ -150,8 +154,8 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
     <h2>Heroicommits</h2>
     <table>
         <tr>
-            <td><label>From: <input type="date" id="desde"></label></td>
-            <td><label>to: <input type="date" id="hasta"></label></td>
+            <td><div id="divSelectYear"></div></td>
+            <td><div id="divSelectMonth"></div></td>            
             <td><button id="btnSearchHeroiCommits">Search HeroiCommits</button></td>
             <td><div id="selectAuthor"></div></td>
             <td><div id="totalHeroicommits"></div></td>
@@ -175,8 +179,8 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         document.getElementById("btnSearchHeroiCommits").addEventListener("click", () => {
           vscode.postMessage({
             command: "searchHeroiCommits",
-            desde: document.getElementById("desde").value,
-            hasta: document.getElementById("hasta").value
+            month: document.getElementById("selectMonth").value,
+            year: document.getElementById("selectYear").value
           });
         });
 
@@ -192,9 +196,49 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             searchHeroiCommits();
         });
 
+        createSelectDates();
+
         function searchHeroiCommits() {
             createSelectAuthors();
             showHeroiCommits(commits);
+        }
+
+        function createSelectDates() {
+
+            const thisYear = new Date().getFullYear();
+
+            var htmlSelectYear = \`<select id="selectYear"> \`;
+            for (let year = 2008; year <= thisYear; year++) {
+                htmlSelectYear += \`<option value=\` + year +  \`>\` + year + \`</option>\`;
+            }
+
+            htmlSelectYear += \`</select>\`;
+
+            document.getElementById("divSelectYear").innerHTML = "Select Year: " + htmlSelectYear;
+
+            const months = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+            ];
+
+            var htmlSelectMonth = \`<select id="selectMonth"> \`;
+            for (let i = 0; i < months.length; i++) {
+                htmlSelectMonth += \`<option value=\` + (i+1) +  \`>\` + months[i] + \`</option>\`;
+            }
+
+            htmlSelectMonth += \`</select>\`;
+
+            document.getElementById("divSelectMonth").innerHTML = "Select Month: " + htmlSelectMonth;
         }
 
         function createSelectAuthors() {
@@ -240,8 +284,14 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         };
 
         // === FUNCIONES PARA SABADOS Y DOMINGOS ===
-        const diasDelMes = Array.from({ length: 31 }, (_, i) => i + 1);
-        const primerDiaSemana = 6; // 0=domingo, 1=lunes ... (ej: día 1 = miércoles)
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        const diasDelMes = Array.from(
+                    { length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() },
+                    (_, i) => i + 1);
+
+        const primerDiaSemana = firstDayOfMonth.getDay();
         function esFinDeSemana(dia) {
             const diaSemana = (primerDiaSemana + (dia - 1)) % 7;
             return diaSemana === 0 || diaSemana === 6;
@@ -319,6 +369,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         // === LAYOUT ===
         const layout = {
             title: 'Commits por día y hora (con franjas y fines de semana)',
+            template: 'plotly_dark',
             xaxis: xaxis,
             yaxis: { title: 'Hours', range: [0,23], tickvals: tickVals, ticktext: tickText },
             shapes: shapes,
