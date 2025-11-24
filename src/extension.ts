@@ -154,13 +154,14 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             <td><label>to: <input type="date" id="hasta"></label></td>
             <td><button id="btnSearchHeroiCommits">Search HeroiCommits</button></td>
             <td><div id="selectAuthor"></div></td>
+            <td><div id="totalHeroicommits"></div></td>
         </tr>
     </table>
     <div id="plot"></div>
     <style>
         table {
-        border-collapse: separate;
-        border-spacing: 15px; /* espacio entre celdas */
+            border-collapse: separate;
+            border-spacing: 15px; /* espacio entre celdas */
         }
     </style>
       <script>
@@ -206,13 +207,13 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
 
             htmlSelect += \`</select>\`;
 
-            document.getElementById("selectAuthor").innerHTML = htmlSelect;
+            document.getElementById("selectAuthor").innerHTML = "Author: " + htmlSelect;
         }
 
         function isHeroicommit(commit){
 
-            return commit.hora < 9  || 
-                   commit.hora > 18 || 
+            return commit.hora < 9  ||
+                   commit.hora > 18 ||
                    esFinDeSemana(commit);
         }
 
@@ -235,7 +236,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
                 const mm = Math.round((c.hora % 1) * 60).toString().padStart(2, '0');
                 return hh + \`:\` + mm;
             }),
-            hovertemplate: 'Día %{x}, Hora %{text}<extra></extra>'
+            hovertemplate: '%{x} %{text}<extra></extra>'
         };
 
         // === FUNCIONES PARA SABADOS Y DOMINGOS ===
@@ -327,6 +328,8 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
 
         // === PLOTEAR ===
         Plotly.newPlot('plot', [trace], layout);
+
+        document.getElementById("totalHeroicommits").innerHTML = "Found: " + allcommits.filter(c => isHeroicommit(c)).length  + " Heroicommits";
     }
     
     </script>
