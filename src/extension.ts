@@ -55,15 +55,16 @@ export function activate(context: vscode.ExtensionContext) {
                         const { stdout } = await execPromise(gitCommand, { cwd: repoPath });                        
                         const lines = stdout.trim().split('\n').filter(Boolean);
                         let commitList: { dia: string; hora: number; author: string }[] = [];
-                                                
+                        
+                        let i = 1;
+
                         for (const line of lines) {
                             const [fullDate, author] = line.split('|');
                             if (!fullDate || !author) continue;
 
                             const [date,time,zone] = fullDate.split(' ');
                             const [yy,mm,day] = date.split('-');
-
-                            commitList.push({ dia: day, hora: horaAdecimal(time), author: author });
+                            commitList.push({ dia: day, hora: horaAdecimal(time), author: author });                            
                         }
 
                         panel.webview.postMessage({
@@ -124,6 +125,15 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             width: 200px;
         }
 
+        select {
+            background: #252526;
+            color: #ddd;
+            border: 1px solid #333;
+            padding: 5px;
+            border-radius: 4px;
+            width: 200px;
+        }
+
         button {
             margin-top: 15px;
             padding: 8px 16px;
@@ -155,7 +165,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
     <table>
         <tr>
             <td><div id="divSelectYear"></div></td>
-            <td><div id="divSelectMonth"></div></td>            
+            <td><div id="divSelectMonth"></div></td>
             <td><button id="btnSearchHeroiCommits">Search HeroiCommits</button></td>
             <td><div id="selectAuthor"></div></td>
             <td><div id="totalHeroicommits"></div></td>
@@ -208,13 +218,14 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             const thisYear = new Date().getFullYear();
 
             var htmlSelectYear = \`<select id="selectYear"> \`;
-            for (let year = 2008; year <= thisYear; year++) {
+            for (let year = thisYear; year >= 2008; year--) {
                 htmlSelectYear += \`<option value=\` + year +  \`>\` + year + \`</option>\`;
             }
 
             htmlSelectYear += \`</select>\`;
 
             document.getElementById("divSelectYear").innerHTML = "Select Year: " + htmlSelectYear;
+            document.getElementById("selectYear").value = thisYear;
 
             const months = [
             "January",
@@ -239,19 +250,31 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             htmlSelectMonth += \`</select>\`;
 
             document.getElementById("divSelectMonth").innerHTML = "Select Month: " + htmlSelectMonth;
+            document.getElementById("selectMonth").value = new Date().getMonth() + 1;
         }
 
         function createSelectAuthors() {
 
             const onlyAuthors = [...new Set(commits.map(c => c.author))];
             var htmlSelect = \`<select name="Author" onchange="filterCommits(this)"> \`;
+
+            htmlSelect += \`<option value="0">All</option>\`;
+
             for (let i = 0; i < onlyAuthors.length; i++) {
-                htmlSelect += \`<option value=\` + onlyAuthors[i] +  \`>\` + onlyAuthors[i] + \`</option>\`;
+                htmlSelect += \`<option value="\` + onlyAuthors[i] +  \`">\` + onlyAuthors[i] + \`</option>\`;
             }
 
             htmlSelect += \`</select>\`;
 
             document.getElementById("selectAuthor").innerHTML = "Author: " + htmlSelect;
+        }
+
+        function filterCommits(selectAuthor){
+
+            console.log(selectAuthor.value);
+            console.log(commits);
+            var authorFilteredCommits = commits.filter(c => (c.author == selectAuthor.value) || (selectAuthor.value == "0"));
+            showHeroiCommits(authorFilteredCommits);
         }
 
         function isHeroicommit(commit){
@@ -368,7 +391,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
 
         // === LAYOUT ===
         const layout = {
-            title: 'Commits por día y hora (con franjas y fines de semana)',
+            title: 'Gray: Weekends - Yellow: Laboral Time',
             template: 'plotly_dark',
             xaxis: xaxis,
             yaxis: { title: 'Hours', range: [0,23], tickvals: tickVals, ticktext: tickText },
