@@ -52,7 +52,8 @@ export function activate(context: vscode.ExtensionContext) {
 
                         const gitCommand = `git log --since="${dateFrom}" --until="${dateTo}" --pretty=format:"%ad|%an" --date=iso`;
                         
-                        const { stdout } = await execPromise(gitCommand, { cwd: repoPath });                        
+                        const { stdout } = await execPromise(gitCommand, { cwd: repoPath });  
+                        
                         const lines = stdout.trim().split('\n').filter(Boolean);
                         let commitList: { dia: string; hora: number; author: string }[] = [];
                         
@@ -71,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
                             command: 'commitsData',
                             commitList
                         });
-                    } catch (err: any) {
+                    } catch (err: any) {                        
                         panel.webview.postMessage({
                             type: 'error',
                             text: `Error on searching for heroicommits: ${err.message}`
@@ -277,6 +278,15 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             showHeroiCommits(authorFilteredCommits);
         }
 
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        function esFinDeSemana(dia) {
+            const primerDiaSemana = firstDayOfMonth.getDay();
+            const diaSemana = (primerDiaSemana + (dia - 1)) % 7;
+            return diaSemana === 0 || diaSemana === 6;
+        }
+
         function isHeroicommit(commit){
 
             return commit.hora < 9  ||
@@ -307,19 +317,11 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         };
 
         // === FUNCIONES PARA SABADOS Y DOMINGOS ===
-        const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
+                
         const diasDelMes = Array.from(
                     { length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() },
                     (_, i) => i + 1);
-
-        const primerDiaSemana = firstDayOfMonth.getDay();
-        function esFinDeSemana(dia) {
-            const diaSemana = (primerDiaSemana + (dia - 1)) % 7;
-            return diaSemana === 0 || diaSemana === 6;
-        }
-
+                
         // === SHAPES ===
         const shapes = [];
 
