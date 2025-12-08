@@ -94,8 +94,8 @@ function horaAdecimal(hora: string): number {
 export function deactivate() { }
 
 function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): string {
-    return /*html*/ `
-
+    return `
+    <html>    
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

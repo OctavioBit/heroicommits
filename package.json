@@ -1,6 +1,6 @@
 {
     "name": "heroicommits",
-    "displayName": "Heroicommits",
+    "displayName": "Heroicommits",    
     "description": "Show your commitment with commits",
     "version": "0.0.1",
     "engines": {
