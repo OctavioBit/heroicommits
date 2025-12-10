@@ -291,7 +291,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
 
             return commit.hora < 9  ||
                    commit.hora > 18 ||
-                   esFinDeSemana(commit);
+                   esFinDeSemana(commit.dia);
         }
 
         function showHeroiCommits(allcommits) {
@@ -300,6 +300,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         const trace = {
             x: allcommits.map(c => c.dia),
             y: allcommits.map(c => c.hora),
+            customdata: allcommits.map(c => c.author),
             mode: 'markers',
             type: 'scatter',
             marker: {
@@ -313,7 +314,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
                 const mm = Math.round((c.hora % 1) * 60).toString().padStart(2, '0');
                 return hh + \`:\` + mm;
             }),
-            hovertemplate: '%{x} %{text}<extra></extra>'
+            hovertemplate: '%{x} %{text} %{customdata} <extra></extra>'
         };
 
         // === FUNCIONES PARA SABADOS Y DOMINGOS ===
@@ -364,8 +365,13 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         //Eje X
         let datesVal = [];
         let datesText = [];
-        const fechaDesde = new Date(2025, 8, 2);
-        const fechaHasta = new Date(2025, 8, 30);
+
+        const year = document.getElementById("selectYear").value;
+        const month = document.getElementById("selectMonth").value;
+        const lastMonthDay = new Date(year, month, 0).getDate();
+
+        const fechaDesde = new Date(year, month-1, 1);
+        const fechaHasta = new Date(year, month-1, lastMonthDay);
         const dayFrom = fechaDesde.getDay();
         const diferenciaMilis = fechaHasta - fechaDesde;
         const dias = diferenciaMilis / (1000 * 60 * 60 * 24);
@@ -374,7 +380,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         datesVal.push(currentDate.getDate());
         datesText.push(currentDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }));
 
-        for (let d = 0; d <= dias; d++) {
+        for (let d = 1; d <= dias; d++) {
 
             currentDate.setDate(currentDate.getDate() + 1);
             datesVal.push(currentDate.getDate());
