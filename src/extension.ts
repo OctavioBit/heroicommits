@@ -277,11 +277,13 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             var authorFilteredCommits = commits.filter(c => (c.author == selectAuthor.value) || (selectAuthor.value == "0"));
             showHeroiCommits(authorFilteredCommits);
         }
-
-        const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
+        
         function esFinDeSemana(dia) {
+
+            const firstDayOfMonth = new Date(document.getElementById("selectYear").value,
+                                             document.getElementById("selectMonth").value-1,
+                                             1);
+
             const primerDiaSemana = firstDayOfMonth.getDay();
             const diaSemana = (primerDiaSemana + (dia - 1)) % 7;
             return diaSemana === 0 || diaSemana === 6;
@@ -318,9 +320,13 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         };
 
         // === FUNCIONES PARA SABADOS Y DOMINGOS ===
-                
+        
+        const year = document.getElementById("selectYear").value;
+        const month = document.getElementById("selectMonth").value;
+        const lastMonthDay = new Date(year, month, 0).getDate();
+
         const diasDelMes = Array.from(
-                    { length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() },
+                    { length: lastMonthDay },
                     (_, i) => i + 1);
                 
         // === SHAPES ===
@@ -365,11 +371,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         //Eje X
         let datesVal = [];
         let datesText = [];
-
-        const year = document.getElementById("selectYear").value;
-        const month = document.getElementById("selectMonth").value;
-        const lastMonthDay = new Date(year, month, 0).getDate();
-
+        
         const fechaDesde = new Date(year, month-1, 1);
         const fechaHasta = new Date(year, month-1, lastMonthDay);
         const dayFrom = fechaDesde.getDay();
