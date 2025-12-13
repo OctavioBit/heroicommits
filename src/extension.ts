@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import * as util from 'util';
-import * as path from 'path';
-import * as fs from 'fs';
 
 const execPromise = util.promisify(exec);
 
@@ -13,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
         async () => {
             const panel = vscode.window.createWebviewPanel(
                 'heroicommits',
-                'Heroicommits',
+                '•HeroiCommits•',
                 vscode.ViewColumn.One,
                 { enableScripts: true }
             );
@@ -89,7 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
         100
     );
 
-    statusBarItem.text = "°HeroiCommits°"
+    statusBarItem.text = "•HeroiCommits•"
     statusBarItem.command = "gitHeroicommits.searchHeroicommits";
     statusBarItem.tooltip = "Search for Heroicommits";
     statusBarItem.show();
@@ -175,7 +173,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
     </style>
 </head>
 <body>
-    <h2>Heroicommits</h2>
+    <h2>•HeroiCommits•</h2>
     <table>
         <tr>
             <td><div id="divSelectYear"></div></td>
