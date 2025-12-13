@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import * as util from 'util';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const execPromise = util.promisify(exec);
 
 export function activate(context: vscode.ExtensionContext) {
-    
+        
     const disposable = vscode.commands.registerCommand(
         'gitHeroicommits.searchHeroicommits',
         async () => {
@@ -82,7 +84,18 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
+    const statusBarItem = vscode.window.createStatusBarItem(
+        vscode.StatusBarAlignment.Right,
+        100
+    );
+
+    statusBarItem.text = "°HeroiCommits°"
+    statusBarItem.command = "gitHeroicommits.searchHeroicommits";
+    statusBarItem.tooltip = "Search for Heroicommits";
+    statusBarItem.show();
+    
     context.subscriptions.push(disposable);
+    context.subscriptions.push(statusBarItem);
 }
 
 function horaAdecimal(hora: string): number {
