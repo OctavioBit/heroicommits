@@ -3,16 +3,22 @@
     "displayName": "Heroicommits",    
     "description": "Show your commitment with commits",
     "version": "0.0.1",
+    "publisher": "OctavioBit",
     "engines": {
         "vscode": "^1.85.0"
     },
     "categories": [
         "Other"
     ],
+    "icon": "resources/heroicommits-icon.png",
     "activationEvents": [
         "onCommand:gitHeroicommits.searchHeroicommits",
         "onStartupFinished"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/OctavioBit/heroicommits"
+    },
     "main": "./out/extension.js",
     "contributes": {
         "commands": [

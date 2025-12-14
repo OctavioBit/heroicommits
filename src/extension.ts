@@ -43,10 +43,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 
                         }
-                                                
-                        const repoPath = workspaceFolders[0].uri.fsPath;
 
-                        //2025-07-18 00:18:35 -0300|OctavioBit FORMATO ISO
+                        const repoPath = workspaceFolders[0].uri.fsPath;                        
                         const dateFrom = year + "-" + month + "-01";
                         const dateTo = year + "-" + month + "-" + new Date(year, month, 0).getDate();
 
@@ -65,7 +63,7 @@ export function activate(context: vscode.ExtensionContext) {
 
                             const [date,time,zone] = fullDate.split(' ');
                             const [yy,mm,day] = date.split('-');
-                            commitList.push({ dia: day, hora: horaAdecimal(time), author: author });                            
+                            commitList.push({ dia: day, hora: decimalHour(time), author: author });
                         }
 
                         panel.webview.postMessage({
@@ -96,7 +94,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(statusBarItem);
 }
 
-function horaAdecimal(hora: string): number {
+function decimalHour(hora: string): number {
     const [hh, mm, ss] = hora.split(":").map(Number);
 
     return hh + mm / 60 + (ss ?? 0) / 3600;
@@ -110,7 +108,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heroicommits</title>
+    <title>HeroiCommits</title>
     <style>
         body {
             font-family: sans-serif;
@@ -187,7 +185,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
     <style>
         table {
             border-collapse: separate;
-            border-spacing: 15px; /* espacio entre celdas */
+            border-spacing: 15px;
         }
     </style>
       <script>
@@ -282,9 +280,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         }
 
         function filterCommits(selectAuthor){
-
-            console.log(selectAuthor.value);
-            console.log(commits);
+            
             var authorFilteredCommits = commits.filter(c => (c.author == selectAuthor.value) || (selectAuthor.value == "0"));
             showHeroiCommits(authorFilteredCommits);
         }
@@ -308,8 +304,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
         }
 
         function showHeroiCommits(allcommits) {
-
-        // === TRAZA DE COMMITS ===
+        
         const trace = {
             x: allcommits.map(c => c.dia),
             y: allcommits.map(c => c.hora),
@@ -329,9 +324,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
             }),
             hovertemplate: '%{x} %{text} %{customdata} <extra></extra>'
         };
-
-        // === FUNCIONES PARA SABADOS Y DOMINGOS ===
-        
+                
         const year = document.getElementById("selectYear").value;
         const month = document.getElementById("selectMonth").value;
         const lastMonthDay = new Date(year, month, 0).getDate();
@@ -370,8 +363,7 @@ function getWebviewContent(scriptUri: vscode.Uri, plottyCDNUri: vscode.Uri): str
                 });
             }
         });
-
-        // === CONFIGURAR EJE Y CON FORMATO HH:MM ===
+        
         const tickVals = [];
         const tickText = [];
         for (let h = 0; h <= 23; h++) {
