@@ -2,7 +2,7 @@
     "name": "heroicommits",
     "displayName": "Heroicommits",    
     "description": "Show your commitment with commits",
-    "version": "0.0.1",
+    "version": "1.0.1",
     "publisher": "OctavioBit",
     "engines": {
         "vscode": "^1.85.0"
