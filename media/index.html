@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeroiCommits</title>
+    <link rel="stylesheet" href="{{stylesUri}}">
+</head>
+<body>
+    <h2>•HeroiCommits•</h2>
+    <table>
+        <tr>
+            <td>
+                <label>From:</label>
+                <input type="date" id="inputDateFrom" />
+            </td>
+            <td>
+                <label>Until:</label>
+                <input type="date" id="inputDateUntil" />
+            </td>
+            <td><button id="btnSearchHeroiCommits">Search HeroiCommits</button></td>
+            <td><div id="selectAuthor"></div></td>
+            <td><div id="totalHeroicommits"></div></td>
+        </tr>
+    </table>
+    <div id="plot"></div>
+
+    <script src="{{plottyCDNUri}}"></script>
+    <script src="{{scriptUri}}"></script>
+</body>
+</html>
